@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "users-chart.fullname" . }}
+  labels:
+    {{- include "users-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "users-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "users-chart.selectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repo }}/{{ .Values.image.name }}:{{ .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: {{ .Values.app.port }}
+              protocol: TCP
+          env:
+            - name: DBHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: DBHOST
+            - name: DBPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: DBPORT
+            - name: DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: DBNAME
+            - name: DBUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: DBUSER
+            - name: DBPASS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: DBPASS
+            - name: HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: HOST
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.config.app.name }}
+                  key: PORT
+

@@ -1,0 +1,53 @@
+replicaCount: 1
+
+config:
+  app:
+    name: users-config
+  db:
+    name: db-config
+
+app:
+  name: users-app
+  host: 0.0.0.0
+  port: 8000
+
+db:
+  name: users-db
+  port: 5432
+  user: usersapp
+  password: password
+
+image:
+  repo: xost
+  name: users
+  version: 0.0.7
+
+service:
+  name: users-service
+  type: NodePort
+  port: 80
+  proto: TCP
+
+ingress:
+  name: users-ingress
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: arch.homework
+      paths: ["/users"]
+
+metrics:
+  serviceMonitor:
+    enabled: true
+
+postgresql:
+  auth:
+    username: usersapp
+    password: password
+    database: users-db
+  primary:
+    persistence:
+      existingClaim: postgresql-pv-claim
+      enabled: true
+    volumePermitions:
+      enabled: true

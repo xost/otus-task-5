@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.config.app.name }}
+data:
+  DBHOST: "{{ .Release.Name }}-postgresql"
+  DBPORT: "{{ .Values.db.port }}"
+  DBNAME: "{{ .Values.db.name }}"
+  DBUSER: "{{ .Values.db.user }}"
+  DBPASS: "{{ .Values.db.password }}"
+  HOST: "{{ .Values.app.host }}"
+  PORT: "{{ .Values.app.port }}"

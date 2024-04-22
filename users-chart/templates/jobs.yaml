@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db
+spec:
+  template:
+    metadata:
+      labels:
+        app: init-db
+    spec:
+      containers:
+      - name: init-db
+        image: postgres:11-alpine
+        command:
+          - sh
+          - -c
+          - >
+              while ! pg_isready -U ${DBUSER} -h {{ .Release.Name }}-postgresql; do sleep 1; done;
+              echo "${SQLCOMMAND}" | psql -h ${DBHOST} -U ${DBUSER} -d ${DBNAME}\
+                --set ON_ERROR_STOP=1 \
+                --set dbname="${DBNAME}"
+        env:
+        - name: DBHOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.config.app.name }}
+              key: DBHOST
+        - name: DBNAME
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.config.app.name }}
+              key: DBNAME
+        - name: DBUSER
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.config.app.name }}
+              key: DBUSER
+        - name: PGPASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.config.app.name }}
+              key: DBPASS
+        - name: SQLCOMMAND
+          value: |
+            CREATE TABLE IF NOT EXISTS users
+            (
+                id serial PRIMARY KEY,
+                email VARCHAR(128) UNIQUE,
+                name VARCHAR(128)
+            )
+      restartPolicy: OnFailure
+  backoffLimit: 2
